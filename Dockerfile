@@ -1,18 +1,18 @@
 # ---------- Build stage ----------
-FROM eclipse-temurin:21-jre-jammy
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-# Copy Maven metadata first so dependencies can be cached.
+# Copy Maven configuration first so dependency downloads can be cached.
 COPY pom.xml .
 
-# Download dependencies.
+# Download Maven dependencies.
 RUN mvn -B dependency:go-offline
 
-# Copy backend source code.
+# Copy application source code.
 COPY src ./src
 
-# Build the Spring Boot executable JAR.
+# Create the executable Spring Boot JAR.
 RUN mvn -B clean package -DskipTests
 
 
@@ -21,7 +21,7 @@ FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-# Create and use a non-root runtime user.
+# Use a non-root user in the runtime container.
 RUN groupadd --system spring \
     && useradd --system --gid spring spring
 
@@ -31,6 +31,7 @@ RUN chown spring:spring app.jar
 
 USER spring
 
-EXPOSE 8070
+# Railway supplies PORT at runtime; EXPOSE is only documentation.
+EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
