@@ -1,4 +1,4 @@
-server.port: 8070
+server.port: ${PORT:8070}
 
 spring:
   application:
@@ -6,10 +6,19 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:postgresql://ep-proud-heart-b48z43gq-pooler.c-6.us-east-2.aws.neon.tech/neondb?user=auxi_user&password=npg_DXGev57ytukw&sslmode=require&channelBinding=require
-    username: auxi_user
-    password: npg_DXGev57ytukw
+    url: ${${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+	
+    hikari:
+    maximum-pool-size: ${DB_POOL_MAX_SIZE:3}
+    minimum-idle: ${DB_POOL_MIN_IDLE:1}
+    connection-timeout: 30000
+    validation-timeout: 5000
+    idle-timeout: 600000
+    max-lifetime: 1500000
+	
   jpa:
     hibernate:
       ddl-auto: none
@@ -24,9 +33,9 @@ spring:
     validate-on-migrate: false
 
 jwt:
-  secret: UTaxi+9SSYxkyLTVfWb1RPXgli8pxlq4dua80/t7zaY=
-  access-expiration: 900000        # 15 minutes
-  refresh-expiration: 604800000    # 7 days
+  secret: ${JWT_SECRET}
+  access-expiration: ${JWT_ACCESS_EXPIRATION:900000}        # 15 minutes
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}    # 7 days
   
 logging:
   level:
@@ -36,3 +45,17 @@ logging:
     org.springframework.security.authentication: DEBUG
     org.springframework.security.dao: DEBUG
     com.auxidata.api: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+		
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
